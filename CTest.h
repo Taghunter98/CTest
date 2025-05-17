@@ -27,40 +27,58 @@ typedef enum {
 } Status;
 
 // Test object structure
-typedef struct CTest{
+typedef struct {
     char* id;           // ID for test
     char* description;  // User provided description
     Status testStatus;  // Status for pass/fail 0 - 3
     char* statusMessage; // Message to display on error
 } Test;
 
-// Initialisation function
-Test* setup(const char* description) {
+// Main Test
+typedef struct {
+    Test tests[20];
+    int elements;
+} CTest;
+
+// Initialisation functions
+
+CTest* testSetup() {
+    CTest *test = malloc(sizeof(CTest));
+    test->elements = 0;
+    return test;
+}
+
+Test* testInit(const char* description) {
     Test* test = malloc(sizeof(Test));
     if (!test) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
-    test->id = "CTEST_UNIT";    // Set test ID
-    test->testStatus = IDLE;    // Set to IDLE as default
+    test->id = strdup("CTEST_UNIT"); 
+    test->testStatus = IDLE;
 
-    // Allocate memory for description, just uses length of string + 1 for null ter
-    test->description = malloc(strlen(description) + 1);
-    if (!test->description) {
-        fprintf(stderr, "Memory allocation failed\n");
-        free(test);
-        exit(EXIT_FAILURE);
-    }
-    strcpy(test->description, description); // Copy description     
+    test->description = strdup(description); 
+    test->statusMessage = strdup("");        
+
     return test;
 }
 
 // Assert equal A == B
-void assertEqual(Test* test, int a, int b) {
+void assertEqual(CTest* test, int a, int b) {
+    // Perform out of bounds check
+    if (test->elements >= 20) return;
+
+    // Create test object
+    char description[] = "TEST";
+    Test *newTest = testInit(description);
     // Check value
-    if (a == b) test->testStatus = PASSED;
-    else test->testStatus = FAILED;
+    if (a == b) newTest->testStatus = PASSED;
+    else newTest->testStatus = FAILED;
+
+    // Add test to main test 
+    test->tests[test->elements] = (*newTest);
+    test->elements++;
 }
 
 // Check status
@@ -84,12 +102,21 @@ void displayInfo(Test* test) {
     checkStatus(test);
 }
 
-// Free memory
-void freeTest(Test* test) {
-    if (test) {
-        free(test->description);
-        free(test);
+void displayTests(CTest* test) {
+    printf("\nCURRENT TESTS %d\n\n", test->elements);
+    for (int i = 0; i < test->elements; i++) {
+        displayInfo(&test->tests[i]);
+        printf("\n");
     }
+}
+
+// Free memory
+void freeTest(CTest* test) {
+    for (int i = 0; i < test->elements; i++) {
+        free(test->tests[i].description);
+    }
+
+    free(test);
 }
 
 #endif

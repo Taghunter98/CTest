@@ -3,10 +3,9 @@
 #include "CTest.h"
 
 int main() {
-    char description[] = "TEST";
-    Test *test = setup(description);
-    displayInfo(test);
+    CTest *test = testSetup();
     assertEqual(test, 5, 5);
-    displayInfo(test);
+    assertEqual(test, 2, 5);
+    displayTests(test);
     freeTest(test);
 }
