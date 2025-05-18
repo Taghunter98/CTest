@@ -11,11 +11,12 @@
 REQUIREMENTS
 Simple requirements for first release
 
-1. Test needs to be runable try enum for progress: FAILED, RUNNING, PASSED
-2. Test needs red/green output on terminal Linux/MacOS only
-3. Test needs assert statements - timeout settings for safety
-4. Appropriate error handling for failed tests
-5. Flag system to indicate test - all tests are added to a queue to be run sequentially
+1. Test needs to be runable try enum for progress: FAILED, RUNNING, PASSED                  DONE
+2. Test needs red/green output on terminal Linux/MacOS only                                 DONE
+3. Test needs assert statements - timeout settings for safety                               TODO
+4. Appropriate error handling for failed tests                                              TODO
+5. Flag system to indicate test - all tests are added to a queue to be run sequentially     TODO
+6. Add skipped functionality                                                                TODO
 
 */
 
@@ -43,7 +44,6 @@ typedef struct {
 } CTest;
 
 // Initialisation functions
-
 CTest* testSetup() {
     CTest *test = malloc(sizeof(CTest));
     test->elements = 0;
@@ -51,49 +51,53 @@ CTest* testSetup() {
 }
 
 Test* testInit(const char* description) {
-    Test* test = malloc(sizeof(Test));
-    if (!test) {
+    Test* test = malloc(sizeof(Test));          // Allocate memory for test size
+    if (!test) {                       
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
-    test->id = strdup("CTEST_UNIT"); 
-    test->testStatus = IDLE;
+    test->id = strdup("CTEST_UNIT");            // Hardcoded ID for tests - may be useful later
+    test->testStatus = IDLE;                    // Test is in IDLE state, not running
 
-    test->description = strdup(description); 
-    test->statusMessage = strdup("");
-    test->timeTaken = 0.0;        
+    test->description = strdup(description);    // Description - "Test if A is not equal to B" 
+    test->statusMessage = strdup("");           // Status message - "A != B"
+    test->timeTaken = 0.0;                      // Measure of time taken on execution
 
     return test;
 }
 
-// Assert equal A == B
+/*
+
+Assertions
+
+*/
+
 void assertEqual(CTest* test, int a, int b, char* description) {
-    // Perform out of bounds check
-    if (test->elements >= 20) return;
+    if (test->elements >= 20) return;   // Out of bounds check
 
     // Create test object
     Test *newTest = testInit(description);
 
-    // Start test timer
-    clock_t start_time;
-    clock_t end_time;
-    double elapsed_time;
-    start_time = clock(); // Record the start time
+    // Start timer before code runtime
+    clock_t start;      
+    clock_t end;        
+    double runtime;     // Test runtime 
+    start = clock();    // Record the start time
 
     // Check value
     if (a == b) {
         newTest->testStatus = PASSED;
-        asprintf(&(newTest->statusMessage), "%d is equal to %d\n", a, b);
+        asprintf(&(newTest->statusMessage), "%d = %d", a, b);
     } else {
         newTest->testStatus = FAILED;
-        asprintf(&(newTest->statusMessage), "%d is not equal to %d\n", a, b);
+        asprintf(&(newTest->statusMessage), "%d != %d", a, b);
     }
 
     // End timer and record time
-    end_time = clock();
-    elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
-    newTest->timeTaken = elapsed_time;
+    end = clock();
+    runtime = ((double) (end - start)) / CLOCKS_PER_SEC;
+    newTest->timeTaken = runtime;
 
     // Add test to main test 
     test->tests[test->elements] = (*newTest);
@@ -104,44 +108,48 @@ void assertEqual(CTest* test, int a, int b, char* description) {
 void checkStatus(Test* test) {
     if (test->testStatus == 2) {
         printf("\033[0;32m"); // green
-        printf("PASSED\n");
+        printf("PASS");
         printf("\033[0m");
     } else if (test->testStatus == 3) {
         printf("\033[0;31m"); // red
-        printf("FAILED\n");
+        printf("FAIL");
         printf("\033[0m");
     } else {
-        printf("IDLE\n");   // default
+        printf("IDLE");   // default
     }
 }
 
-// Test info display DEBUG function
-void displayInfo(Test* test) {
-    printf("Test ID:\t%s\nDescription:\t%s\nTest Status:\t%u\nMessage:\t%s", test->id, test->description, test->testStatus, test->statusMessage);
-    checkStatus(test);
-}
-
+// Display tests
 void testResult(Test* test) {
     checkStatus(test);
-    printf("\nRan test in %f seconds\n%s\n%s", test->timeTaken, test->description, test->statusMessage);
+    // 40 is the width for the description field, adjust as needed
+    printf("\t%-50s (%fs)", test->description, test->timeTaken);
 }
 
 void displayTests(CTest* test) {
     int failures;
-    printf("\nRAN %d TESTS\n\n", test->elements);
+    double totalTime;
+
+    // Grab total runtime of tests
+    for (int i = 0; i < test->elements; i++) totalTime += test->tests[i].timeTaken;
+
+    printf("\n======================================================================\n");
+    printf("Ran %d tests in %.3f seconds\n", test->elements, totalTime);
+    printf("======================================================================\n\n");
+
     for (int i = 0; i < test->elements; i++) {
         testResult(&test->tests[i]);
-        printf("\n");
+        printf("\n\n");
         if (test->tests[i].testStatus == 3) failures++;
     }
-
+    printf("\n----------------------------------------------------------------------\n");
     if (failures > 0) {
         printf("\033[0;31m"); // red
-        printf("OVERALL TEST FAILURE\n\n");
+        printf("TEST FAILED\n\n");
         printf("\033[0m");
     } else  {
         printf("\033[0;32m"); // green
-        printf("OVERALL TEST PASSED\n\n");
+        printf("TEST PASSED\n\n");
         printf("\033[0m");
     }
 }
