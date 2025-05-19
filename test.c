@@ -15,12 +15,12 @@ void test2(CTest *test) {
 
 void test3(CTest *test) {
     bool value = true;
-    assertFalse(test, value, "Check A is false", true);
+    assertFalse(test, value, "Check A is false", false);
 }
 
 void test4(CTest *test) {
     int sum = 2 * 200;
-    assertNotNull(test, &sum, "This is deffo not null...", true);
+    assertNotNull(test, &sum, "This is deffo not null...", false);
 }
 
 void test5(CTest *test) {
