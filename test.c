@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "CTest.h"
-#include <time.h>
+#include <stdbool.h>
 
 void test1(CTest *test) {
     int sum = (5 + 5) * 2;
@@ -9,11 +9,18 @@ void test1(CTest *test) {
 }
 
 void test2(CTest *test) {
-    assertEqual(test, 10, 10, "Check A == B");
+    bool value = true;
+    assertTrue(test, value, "Check A is true");
 }
 
 void test3(CTest *test) {
-    assertEqual(test, 41, 400, "Obvious easy test");
+    bool value = false;
+    assertFalse(test, value, "Check A is false");
+}
+
+void test4(CTest *test) {
+    int sum = 2 * 200;
+    assertNotNull(test, &sum, "This is deffo not null...");
 }
 
 int main() {
@@ -21,5 +28,6 @@ int main() {
     test1(test);
     test2(test);
     test3(test);
+    test4(test);
     run(test);
 }

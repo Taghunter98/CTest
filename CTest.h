@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 
 /*
 
@@ -84,7 +85,8 @@ void printRed(const char* text) {
 Basic test structure, setup and end test
 
 */
-Test* startTest(CTest* test, char* description) {
+
+Test* startTest(CTest* test, const char* description) {
     if (test->elements >= 20) return NULL;   // Out of bounds check
 
     // Create test object
@@ -105,28 +107,6 @@ void endTest(CTest* test, Test* curTest) {
     test->elements++;
 }
 
-/*
-
-Assertions
-
-*/
-
-void assertEqual(CTest* test, int a, int b, char* description) {
-    // Create test object
-    Test *newTest = startTest(test, description);
-
-    // Check value
-    if (a == b) newTest->testStatus = PASSED;
-    else {
-        newTest->testStatus = FAILED;
-        asprintf(&(newTest->statusMessage), "AssertionError: %d != %d", a, b);
-    }
-
-    // End timer and record time
-    endTest(test, newTest);
-}
-
-// Check status
 void checkStatus(Test* test) {
     if (test->testStatus == 2) {
         printGreen("PASS");
@@ -137,7 +117,12 @@ void checkStatus(Test* test) {
     }
 }
 
-// Display tests
+/*
+
+Test display
+
+*/
+
 void testResult(Test* test) {
     // Print test info, check for error
     printf("%-40s %-40s\t", test->description, test->statusMessage);
@@ -146,7 +131,7 @@ void testResult(Test* test) {
 }
 
 void displayTests(CTest* test) {
-    int failures;
+    int failures = 0;
     double totalTime;
 
     // Grab total runtime of tests
@@ -161,8 +146,9 @@ void displayTests(CTest* test) {
     }
     
     printf("--------------------------------------------------------------------------------------------\n");
-    printf("Ran %d tests in %.3fs\n", test->elements, totalTime);
+    printf("Ran %d tests in %fs\n", test->elements, totalTime);
     
+    // Check failures to either pass or fail parent test
     if (failures > 0) printRed("\nTEST FAILED\n\n");
     else  printGreen("\nTEST PASSED\n\n");
     
@@ -172,7 +158,6 @@ void displayTests(CTest* test) {
 void freeTest(CTest* test) {
     for (int i = 0; i < test->elements; i++) {
         free(test->tests[i].description);
-        free(test->tests[i].statusMessage);
     }
 
     free(test);
@@ -182,6 +167,76 @@ void freeTest(CTest* test) {
 void run(CTest* test) {
     displayTests(test);
     freeTest(test);
+}
+
+/*
+
+Assertions
+
+*/
+
+void assertEqual(CTest* test, int a, int b, const char* description) {
+    // Create test object
+    Test *newTest = startTest(test, description);
+    if (!newTest) return;
+
+    // Assert equal, if not fail
+    if (a == b) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %d != %d", a, b);
+    }
+
+    // End timer and record time
+    endTest(test, newTest);
+}
+
+void assertNotNull(CTest* test, void *a, const char* description) {
+    // Create test object
+    Test *newTest = startTest(test, description);
+    if (!newTest) return;
+
+    // Assert not null, if not return
+    if (a != NULL) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        newTest->statusMessage = "AssertionError: A != NULL";
+    }
+
+    // End timer and record time
+    endTest(test, newTest);
+}
+
+void assertTrue(CTest* test, bool a, const char* description) {
+    // Create test object
+    Test *newTest = startTest(test, description);
+    if (!newTest) return;
+
+    // Assert true, if not return
+    if (a == true) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        newTest->statusMessage = "AssertionError: A != true";
+    }
+
+    // End timer and record time
+    endTest(test, newTest);
+}
+
+void assertFalse(CTest* test, bool a, const char* description) {
+    // Create test object
+    Test *newTest = startTest(test, description);
+    if (!newTest) return;
+
+    // Assert true, if not return
+    if (a == false) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        newTest->statusMessage = "AssertionError: A != false";
+    }
+
+    // End timer and record time
+    endTest(test, newTest);
 }
 
 #endif
