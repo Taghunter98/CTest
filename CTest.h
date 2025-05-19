@@ -35,6 +35,8 @@ typedef struct {
     Status testStatus;  // Status for pass/fail 0 - 3
     char* statusMessage; // Message to display on error
     double timeTaken;   // Runtime of test
+    clock_t start;
+    clock_t end;
 } Test;
 
 // Main Test
@@ -67,6 +69,42 @@ Test* testInit(const char* description) {
     return test;
 }
 
+// Prints text in green
+void printGreen(const char* text) {
+    printf("\033[0;32m%s\033[0m", text);
+}
+
+// Prints text in red
+void printRed(const char* text) {
+    printf("\033[0;31m%s\033[0m", text);
+}
+
+/*
+
+Basic test structure, setup and end test
+
+*/
+Test* startTest(CTest* test, char* description) {
+    if (test->elements >= 20) return NULL;   // Out of bounds check
+
+    // Create test object
+    Test *newTest = testInit(description);
+
+    // Start timer before code runtime
+    newTest->start = clock();    // Record the start time
+    return newTest;
+}
+
+void endTest(CTest* test, Test* curTest) {
+    // End timer and record time
+    curTest->end = clock();
+    curTest->timeTaken = ((double) (curTest->end - curTest->start)) / CLOCKS_PER_SEC;
+
+    // Add test to main test 
+    test->tests[test->elements] = (*curTest);
+    test->elements++;
+}
+
 /*
 
 Assertions
@@ -74,56 +112,37 @@ Assertions
 */
 
 void assertEqual(CTest* test, int a, int b, char* description) {
-    if (test->elements >= 20) return;   // Out of bounds check
-
     // Create test object
-    Test *newTest = testInit(description);
-
-    // Start timer before code runtime
-    clock_t start;      
-    clock_t end;        
-    double runtime;     // Test runtime 
-    start = clock();    // Record the start time
+    Test *newTest = startTest(test, description);
 
     // Check value
-    if (a == b) {
-        newTest->testStatus = PASSED;
-        asprintf(&(newTest->statusMessage), "%d = %d", a, b);
-    } else {
+    if (a == b) newTest->testStatus = PASSED;
+    else {
         newTest->testStatus = FAILED;
-        asprintf(&(newTest->statusMessage), "%d != %d", a, b);
+        asprintf(&(newTest->statusMessage), "AssertionError: %d != %d", a, b);
     }
 
     // End timer and record time
-    end = clock();
-    runtime = ((double) (end - start)) / CLOCKS_PER_SEC;
-    newTest->timeTaken = runtime;
-
-    // Add test to main test 
-    test->tests[test->elements] = (*newTest);
-    test->elements++;
+    endTest(test, newTest);
 }
 
 // Check status
 void checkStatus(Test* test) {
     if (test->testStatus == 2) {
-        printf("\033[0;32m"); // green
-        printf("PASS");
-        printf("\033[0m");
+        printGreen("PASS");
     } else if (test->testStatus == 3) {
-        printf("\033[0;31m"); // red
-        printf("FAIL");
-        printf("\033[0m");
+        printRed("FAIL");
     } else {
-        printf("IDLE");   // default
+        printf("IDLE"); 
     }
 }
 
 // Display tests
 void testResult(Test* test) {
+    // Print test info, check for error
+    printf("%-40s %-40s\t", test->description, test->statusMessage);
     checkStatus(test);
-    // 40 is the width for the description field, adjust as needed
-    printf("\t%-50s (%fs)", test->description, test->timeTaken);
+
 }
 
 void displayTests(CTest* test) {
@@ -133,25 +152,20 @@ void displayTests(CTest* test) {
     // Grab total runtime of tests
     for (int i = 0; i < test->elements; i++) totalTime += test->tests[i].timeTaken;
 
-    printf("\n======================================================================\n");
-    printf("Ran %d tests in %.3f seconds\n", test->elements, totalTime);
-    printf("======================================================================\n\n");
+    printf("\n"); // padding
 
     for (int i = 0; i < test->elements; i++) {
         testResult(&test->tests[i]);
-        printf("\n\n");
+        printf("\n");
         if (test->tests[i].testStatus == 3) failures++;
     }
-    printf("\n----------------------------------------------------------------------\n");
-    if (failures > 0) {
-        printf("\033[0;31m"); // red
-        printf("TEST FAILED\n\n");
-        printf("\033[0m");
-    } else  {
-        printf("\033[0;32m"); // green
-        printf("TEST PASSED\n\n");
-        printf("\033[0m");
-    }
+    
+    printf("--------------------------------------------------------------------------------------------\n");
+    printf("Ran %d tests in %.3fs\n", test->elements, totalTime);
+    
+    if (failures > 0) printRed("\nTEST FAILED\n\n");
+    else  printGreen("\nTEST PASSED\n\n");
+    
 }
 
 // Free memory

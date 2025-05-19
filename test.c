@@ -3,15 +3,23 @@
 #include "CTest.h"
 #include <time.h>
 
-void test1() {
-    CTest *test = testSetup();
+void test1(CTest *test) {
     int sum = (5 + 5) * 2;
     assertEqual(test, sum, 20, "Check if sum is equal to 20");
-    assertEqual(test, 5, 10, "Check A == B");
-    assertEqual(test, 400, 400, "Obvious easy test");
-    run(test);
+}
+
+void test2(CTest *test) {
+    assertEqual(test, 10, 10, "Check A == B");
+}
+
+void test3(CTest *test) {
+    assertEqual(test, 41, 400, "Obvious easy test");
 }
 
 int main() {
-    test1();
+    CTest *test = testSetup();
+    test1(test);
+    test2(test);
+    test3(test);
+    run(test);
 }
