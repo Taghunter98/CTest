@@ -5,29 +5,38 @@
 
 void test1(CTest *test) {
     int sum = (5 + 5) * 2;
-    assertEqual(test, sum, 20, "Check if sum is equal to 20");
+    assertEqual(test, sum, 20, "Check if sum is equal to 20", false);
 }
 
 void test2(CTest *test) {
     bool value = true;
-    assertTrue(test, value, "Check A is true");
+    assertTrue(test, value, "Check A is true", false);
 }
 
 void test3(CTest *test) {
-    bool value = false;
-    assertFalse(test, value, "Check A is false");
+    bool value = true;
+    assertFalse(test, value, "Check A is false", true);
 }
 
 void test4(CTest *test) {
     int sum = 2 * 200;
-    assertNotNull(test, &sum, "This is deffo not null...");
+    assertNotNull(test, &sum, "This is deffo not null...", true);
+}
+
+void test5(CTest *test) {
+    bool val = 1 != 0;
+    assertTrue(test, val, "Really stupid test", false);
 }
 
 int main() {
     CTest *test = testSetup();
+    for(int i = 0; i < 10000; i++) {
+        continue;
+    }
     test1(test);
     test2(test);
     test3(test);
     test4(test);
+    test5(test);
     run(test);
 }
