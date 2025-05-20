@@ -1,3 +1,14 @@
+/**
+ * @file CTest.h
+ * @author Josh Bassett (bassettjosh397@gmail.com)
+ * @brief A lightweight testing framework for C
+ * @version 0.1
+ * @date 2025-05-20
+ * 
+ * @copyright Copyright (c) CTest 2025
+ * 
+ */
+
 #ifndef CTEST_H
 #define CTEST_H
 
@@ -7,21 +18,10 @@
 #include <time.h>
 #include <stdbool.h>
 
-/*
-
-REQUIREMENTS
-Simple requirements for first release
-
-1. Test needs to be runable try enum for progress: FAILED, RUNNING, PASSED                  DONE
-2. Test needs red/green output on terminal Linux/MacOS only                                 DONE
-3. Test needs assert statements - timeout settings for safety                               DONE
-4. Appropriate error handling for failed tests                                              DONE
-5. Flag system to indicate test - all tests are added to a queue to be run sequentially     DONE
-6. Add skipped functionality                                                                DONE
-
-*/
-
-// Test status
+/**
+ * @brief enum structure that holds the test state
+ * 
+ */
 typedef enum {
     IDLE,       // 0 status code
     RUNNING,    // 1 status code
@@ -29,7 +29,10 @@ typedef enum {
     FAILED      // 3 status code
 } Status;
 
-// Test object structure
+/**
+ * @brief Structure for a Test object
+ * 
+ */
 typedef struct {
     char* id;               // ID for test
     char* description;      // User provided description
@@ -41,7 +44,10 @@ typedef struct {
     bool skipped;           // Check if test is to be skipped at runtime
 } Test;
 
-// Main Test
+/**
+ * @brief Structure for CTest object
+ * 
+ */
 typedef struct {
     Test tests[50];         // Limit of 50 tests per parent, might change later
     int elements;           // Counter of elements
@@ -50,8 +56,12 @@ typedef struct {
     clock_t end;            // End of runtime
 } CTest;
 
-// Initialisation functions
-CTest* testSetup() {
+/**
+ * @brief Creation function for a CTest object, used for 
+ * 
+ * @return CTest* 
+ */
+CTest* createCTest() {
     CTest *test = malloc(sizeof(CTest));
     test->elements = 0;
     test->start = clock();
@@ -59,7 +69,7 @@ CTest* testSetup() {
     return test;
 }
 
-Test* testInit(const char* description, bool skip) {
+Test* createTest(const char* description, bool skip) {
     Test* test = malloc(sizeof(Test));          // Allocate memory for test size
     if (!test) {                       
         fprintf(stderr, "Memory allocation failed\n");
@@ -102,7 +112,7 @@ Test* startTest(CTest* test, const char* description, bool skip) {
     if (test->elements >= 20) return NULL;   // Out of bounds check
 
     // Create test object
-    Test *newTest = testInit(description, skip);
+    Test *newTest = createTest(description, skip);
 
     // Start timer before code runtime
     newTest->start = clock();    // Record the start time
