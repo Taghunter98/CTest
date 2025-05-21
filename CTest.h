@@ -1,11 +1,11 @@
 /**
- * @file CTest.h
- * @author Josh Bassett (bassettjosh397@gmail.com)
- * @brief A lightweight testing framework for C
- * @version 0.1
- * @date 2025-05-20
+ * @file        CTest.h
+ * @author      Josh Bassett (bassettjosh397@gmail.com)
+ * @brief       A lightweight testing framework for C
+ * @version     0.1
+ * @date        2025-05-20
  * 
- * @copyright Copyright (c) CTest 2025
+ * @copyright   Copyright (c) CTest 2025
  * 
  */
 
@@ -57,9 +57,9 @@ typedef struct {
 } CTest;
 
 /**
- * @brief Creation function for a CTest object, used for 
+ * @brief Create a CTest object.
  * 
- * @return CTest* 
+ * @return CTest*  
  */
 CTest* createCTest() {
     CTest *test = malloc(sizeof(CTest));
@@ -69,102 +69,137 @@ CTest* createCTest() {
     return test;
 }
 
+/**
+ * @brief Create a Test object.
+ * 
+ * @param description   A description of the test object.
+ * @param skip          Boolean to check if the test is skipped. 
+ * @return Test* 
+ */
 Test* createTest(const char* description, bool skip) {
-    Test* test = malloc(sizeof(Test));          // Allocate memory for test size
+
+    Test* test = malloc(sizeof(Test));          
     if (!test) {                       
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
 
     test->id = strdup("CTEST_UNIT");            // Hardcoded ID for tests - may be useful later
-    test->testStatus = IDLE;                    // Test is in IDLE state, not running
+    test->testStatus = IDLE;                    
 
-    test->description = strdup(description);    // Description - "Test if A is not equal to B" 
-    test->statusMessage = strdup("");           // Status message - "A != B"
-    test->timeTaken = 0.0;                      // Measure of time taken on execution
-    test->skipped = skip;                       // Run or skip test
+    test->description = strdup(description);     
+    test->statusMessage = strdup("");           
+    test->timeTaken = 0.0;                      
+    test->skipped = skip;                       
 
     return test;
 }
 
-// Prints text in green
+/**
+ * @brief Prints green text to the terminal, reserved for pass
+ * 
+ * @param text  Test description text
+ */
 void printGreen(const char* text) {
     printf("\033[0;32m%s\033[0m", text);
 }
 
-// Prints text in red
+/**
+ * @brief Prints red text to the terminal, reserved for errors
+ * 
+ * @param text  Text description text
+ */
 void printRed(const char* text) {
     printf("\033[0;31m%s\033[0m", text);
 }
 
-// Prints text in yellow
+/**
+ * @brief Print yellow text to the terminal, reserved for skipping
+ * 
+ * @param text  Text description text
+ */
 void printYellow(const char* text) {
     printf("\033[0;33m%s\033[0m", text);
 }
 
-/*
-
-Basic test structure, setup and end test
-
-*/
-
+/**
+ * @brief Function that starts a test, begins the runtime clock and returns it
+ * 
+ * @param test          Global CTest object
+ * @param description   Description of the test
+ * @param skip          Bool for test skip
+ * @return Test* 
+ */
 Test* startTest(CTest* test, const char* description, bool skip) {
-    if (test->elements >= 20) return NULL;   // Out of bounds check
 
-    // Create test object
+    if (test->elements >= 50) return NULL; 
     Test *newTest = createTest(description, skip);
-
-    // Start timer before code runtime
-    newTest->start = clock();    // Record the start time
+    newTest->start = clock();    
     return newTest;
 }
 
+/**
+ * @brief Function that ends the test, calculates the runtime and adds the test to 
+ *        the global CTest object
+ * 
+ * @param test      The global CTest object
+ * @param curTest   The current test being executed
+ */
 void endTest(CTest* test, Test* curTest) {
-    // End timer and record time
+    
     curTest->end = clock();
     curTest->timeTaken = ((double) (curTest->end - curTest->start)) / CLOCKS_PER_SEC;
-
-    // Add test to main test 
     test->tests[test->elements] = (*curTest);
     test->elements++;
 }
 
+/**
+ * @brief Helper function to check the status of the test
+ * 
+ * @param test 
+ */
 void checkStatus(Test* test) {
-    // Check if skipped 
+    
     if (test->skipped == true) printYellow("SKIP");
     else {
-        // Otherwise print status
         if (test->testStatus == 2) printGreen("PASS");
         else if (test->testStatus == 3) printRed("FAIL");
         else printf("IDLE"); 
     }
 }
 
-/*
-
-Test display
-
-*/
-
+/**
+ * @brief Function that prints the current test result
+ * 
+ * @param test  Current test object
+ */
 void testResult(Test* test) {
-    // Print test info, check for error
+    
     printf("%-40s %-40s\t", test->description, test->statusMessage);
     checkStatus(test);
-
 }
 
+/**
+ * @brief Function to display all tests that have been run within global CTest object, with
+ *        a status of FAILED or PASSED depending on the check for the test status, if skip
+ *        then the test will not effect the final score
+ * 
+ * @param test  Global CTest object
+ */
 void displayTests(CTest* test) {
+    
+    // TODO remove: Grab total runtime of all tests - might remove this
     int failures = 0;
     double totalTime;
-
-    // Grab total runtime of tests
     for (int i = 0; i < test->elements; i++) totalTime += test->tests[i].timeTaken;
 
-    printf("\n"); // padding
+    printf("\n"); 
 
     for (int i = 0; i < test->elements; i++) {
+
         testResult(&test->tests[i]);
         printf("\n");
+
         if (test->tests[i].skipped == true) continue;
         else if (test->tests[i].testStatus == 3) failures++;
     }
@@ -175,10 +210,13 @@ void displayTests(CTest* test) {
     // Check failures to either pass or fail parent test
     if (failures > 0) printRed("\nTEST FAILED\n\n");
     else  printGreen("\nTEST PASSED\n\n");
-    
 }
 
-// Free memory
+/**
+ * @brief Helper function to free the memory for the Test objects
+ * 
+ * @param test  Global CTest object
+ */
 void freeTest(CTest* test) {
     for (int i = 0; i < test->elements; i++) {
         free(test->tests[i].description);
@@ -187,7 +225,11 @@ void freeTest(CTest* test) {
     free(test);
 }
 
-// Run tests
+/**
+ * @brief Function to 'run' the Test, records the runtime, displays tests and frees memory
+ * 
+ * @param test  Global CTest object 
+ */
 void run(CTest* test) {
     test->end = clock();
     test->timeTaken = ((double) (test->end - test->start)) / CLOCKS_PER_SEC;
@@ -195,77 +237,92 @@ void run(CTest* test) {
     freeTest(test);
 }
 
-/*
-
-Assertions
-
-*/
-
+/**
+ * @brief Assert equal function, checks if a is equal to b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable int a
+ * @param b             Comparable int b
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
 void assertEqual(CTest* test, int a, int b, const char* description, bool skip) {
     
-    // Create test object
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
 
-    // Assert equal, if not fail
     if (a == b) newTest->testStatus = PASSED;
     else {
         newTest->testStatus = FAILED;
         asprintf(&(newTest->statusMessage), "AssertionError: %d != %d", a, b);
     }
 
-    // End timer and record time
     endTest(test, newTest);
 }
 
+/**
+ * @brief Assert not null function, checks if void a is not null
+ * 
+ * @param test          Global CTest object
+ * @param a             Parameter void a
+ * @param description   Test description
+ * @param skip          Bool for test skip
+ */
 void assertNotNull(CTest* test, void *a, const char* description, bool skip) {
     
-    // Create test object
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
 
-    // Assert not null, if not return
     if (a != NULL) newTest->testStatus = PASSED;
     else {
         newTest->testStatus = FAILED;
         newTest->statusMessage = "AssertionError: A != NULL";
     }
 
-    // End timer and record time
     endTest(test, newTest);
 }
 
+/**
+ * @brief Assert true function, checks if boolean a is true
+ * 
+ * @param test          Global CTest object
+ * @param a             Paramater bool a
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
 void assertTrue(CTest* test, bool a, const char* description, bool skip) {
     
-    // Create test object
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
 
-    // Assert true, if not return
     if (a == true) newTest->testStatus = PASSED;
     else {
         newTest->testStatus = FAILED;
         newTest->statusMessage = "AssertionError: A != true";
     }
 
-    // End timer and record time
     endTest(test, newTest);
 }
 
+/**
+ * @brief Assert false function, checks if boolean a is false
+ * 
+ * @param test          Global CTest object
+ * @param a             Parameter bool a
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
 void assertFalse(CTest* test, bool a, const char* description, bool skip) {
     
-    // Create test object
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
 
-    // Assert true, if not return
     if (a == false) newTest->testStatus = PASSED;
     else {
         newTest->testStatus = FAILED;
         newTest->statusMessage = "AssertionError: A != false";
     }
 
-    // End timer and record time
     endTest(test, newTest);
 }
 
