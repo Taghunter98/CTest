@@ -2,7 +2,7 @@
 .vscode
 
 # Test file
-test
+test*
 
 # Prerequisites
 *.d

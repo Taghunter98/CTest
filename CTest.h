@@ -246,7 +246,7 @@ void run(CTest* test) {
  * @param description   Test description 
  * @param skip          Bool for test skip
  */
-void assertEqual(CTest* test, int a, int b, const char* description, bool skip) {
+void assertEqual(CTest* test, const int a, const int b, const char* description, bool skip) {
     
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
@@ -261,6 +261,73 @@ void assertEqual(CTest* test, int a, int b, const char* description, bool skip) 
 }
 
 /**
+ * @brief Assert not equal function, checks if a is not equal to b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable int a
+ * @param b             Comparable int b
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
+void assertNotEqual(CTest* test, const int a, const int b, const char* description, bool skip) {
+    
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    if (a != b) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %d = %d", a, b);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
+ * @brief Assert equals function, checks if string a equals string b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable string a
+ * @param b             Comparable string b
+ * @param description   Test description
+ * @param skip          Bool for test skip
+ */
+void assertEquals(CTest* test, const char* a, const char* b, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    if (strcmp(a, b) == 0) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %s != %s", a, b);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
+ * @brief Assert not equals function, checks if string a is not equal to string b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable string a
+ * @param b             Comparable string b
+ * @param description   Test description
+ * @param skip          Bool for test skip
+ */
+void assertNotEquals(CTest* test, const char* a, const char* b, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    if (strcmp(a, b) != 0) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %s = %s", a, b);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
  * @brief Assert not null function, checks if void a is not null
  * 
  * @param test          Global CTest object
@@ -268,7 +335,7 @@ void assertEqual(CTest* test, int a, int b, const char* description, bool skip) 
  * @param description   Test description
  * @param skip          Bool for test skip
  */
-void assertNotNull(CTest* test, void *a, const char* description, bool skip) {
+void assertNotNull(CTest* test, const void *a, const char* description, bool skip) {
     
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
@@ -290,7 +357,7 @@ void assertNotNull(CTest* test, void *a, const char* description, bool skip) {
  * @param description   Test description 
  * @param skip          Bool for test skip
  */
-void assertTrue(CTest* test, bool a, const char* description, bool skip) {
+void assertTrue(CTest* test, const bool a, const char* description, bool skip) {
     
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
@@ -312,7 +379,7 @@ void assertTrue(CTest* test, bool a, const char* description, bool skip) {
  * @param description   Test description 
  * @param skip          Bool for test skip
  */
-void assertFalse(CTest* test, bool a, const char* description, bool skip) {
+void assertFalse(CTest* test, const bool a, const char* description, bool skip) {
     
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
@@ -321,6 +388,29 @@ void assertFalse(CTest* test, bool a, const char* description, bool skip) {
     else {
         newTest->testStatus = FAILED;
         newTest->statusMessage = "AssertionError: A != false";
+    }
+
+    endTest(test, newTest);
+}
+
+
+void assertIn(CTest* test, const int a, const int b[], const int length, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    bool inArray = false;   // Flag to indicate 
+    for (int i = 0; i < length; i++) {
+
+        if (a == b[i]) {
+            newTest->testStatus = PASSED;
+            inArray = true;
+            break;
+        }
+    }
+
+    if (!inArray) {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %i not in array B", a);
     }
 
     endTest(test, newTest);
