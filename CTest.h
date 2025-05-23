@@ -375,7 +375,7 @@ void assertTrue(CTest* test, const bool a, const char* description, bool skip) {
  * @brief Assert false function, checks if boolean a is false
  * 
  * @param test          Global CTest object
- * @param a             Parameter bool a
+ * @param a             Comparable bool a
  * @param description   Test description 
  * @param skip          Bool for test skip
  */
@@ -393,12 +393,22 @@ void assertFalse(CTest* test, const bool a, const char* description, bool skip) 
     endTest(test, newTest);
 }
 
-
-void assertIn(CTest* test, const int a, const int b[], const int length, const char* description, bool skip) {
+/**
+ * @brief Assert in array function, checks if int a is in array b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable int a 
+ * @param b             Comparable int array b
+ * @param length        Length of given array
+ * @param description   Test description
+ * @param skip          Bool for test skip
+ */
+void assertInInt(CTest* test, const int a, const int b[], const int length, const char* description, bool skip) {
     Test *newTest = startTest(test, description, skip);
     if (!newTest) return;
 
-    bool inArray = false;   // Flag to indicate 
+    bool inArray = false;  
+
     for (int i = 0; i < length; i++) {
 
         if (a == b[i]) {
@@ -411,6 +421,83 @@ void assertIn(CTest* test, const int a, const int b[], const int length, const c
     if (!inArray) {
         newTest->testStatus = FAILED;
         asprintf(&(newTest->statusMessage), "AssertionError: %i not in array B", a);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
+ * @brief Assert in string array function, checks if string a is in array b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable string a
+ * @param b             Comparable string array b
+ * @param length        Length of given array
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
+void assertInChar(CTest* test, const char* a, char *b[], const int length, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    bool inArray = false;  
+
+    for (int i = 0; i < length; i++) {
+        
+        if (a == b[i]) {
+            newTest->testStatus = PASSED;
+            inArray = true;
+            break;
+        }
+    }
+
+    if (!inArray) {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %s not in array B", a);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
+ * @brief Assert greater than function, checks if int a is greater than int b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable int a
+ * @param b             Comparable int b
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
+void assertGreater(CTest* test, const int a, const int b, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    if (a > b) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %i < %i", a, b);
+    }
+
+    endTest(test, newTest);
+}
+
+/**
+ * @brief Assert less than function, checks if int a is less than int b
+ * 
+ * @param test          Global CTest object
+ * @param a             Comparable int a
+ * @param b             Comparable int b
+ * @param description   Test description 
+ * @param skip          Bool for test skip
+ */
+void assertLess(CTest* test, const int a, const int b, const char* description, bool skip) {
+    Test *newTest = startTest(test, description, skip);
+    if (!newTest) return;
+
+    if (a < b) newTest->testStatus = PASSED;
+    else {
+        newTest->testStatus = FAILED;
+        asprintf(&(newTest->statusMessage), "AssertionError: %i > %i", a, b);
     }
 
     endTest(test, newTest);
